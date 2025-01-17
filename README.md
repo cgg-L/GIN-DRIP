@@ -63,8 +63,6 @@ Telmisartan emerges as a top candidate after the comprehensive ranking method.
 
 ## Useful resources
 
-We have pre-computed xx, they can be downloaded [here](https://).
-
 T2D GWAS summary statistics can be downloaded [here](http://diagram-consortium.org/) 
 
 GIN-DRIP requires the expression prediction models, or weights, of genes. The pre-computed weights of GTEx expression and splicing traits can be downloaded from [PredictDB](https://).
