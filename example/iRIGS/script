@@ -1,0 +1,6 @@
+Rscript Gibbs.R --SNP_file input.loci \
+--weightFile input_features \
+--res_path my_iRIGS \
+--flank 1000000 \
+--res_pref T2D \
+--max_gene 20

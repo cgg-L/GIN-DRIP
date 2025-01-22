@@ -6,21 +6,59 @@ GIN-DRIP integrates multimodal data of human genetics, tissue genomics, drug per
 
 ![workflow](/image/workflow.png "This is a sample image.")  
 
-Running GIN-DRIP involves four main steps: disease-risk gene identification, disease signature construction, drug prioritization based on signature matching between disease and drug pertubation profiles, and EHR validation. 
+The GIN-DRIP framework consists of four main components: disease-risk gene identification, disease signature construction, drug prioritization based on signature matching between disease and drug pertubation profiles, and EHR validation. 
 
-In the following, we use type 2 diabetes (T2D) as an example disease to illustrate the steps of running GIN-DRIP.
+In the following, we use type 2 diabetes (T2D) as an example disease to illustrate the steps/components/steps of running GIN-DRIP analysis.
 
 ## 1. iRIGs: identify disease risk genes
 
-GIN-DRIP starts with the identification of high-confidence risk genes (HRGs) for T2D GWAS loci, using [iRIGS](https://), a Bayesian integrative method that probabilistically predicts risk genes for each of the GWAS loci by integrating multi-omics data. 
+GIN-DRIP starts with the identification of high-confidence risk genes (HRGs) from GWAS loci, using [iRIGS](https://www.nature.com/articles/s41593-019-0382-7), a Bayesian integrative method that probabilistically predicts risk genes for each of the GWAS loci by integrating multi-omics data. The [code] of iRIGS can be downloaded 
 
-The input of iRIGS are two files: one file containing GWAS loci (see [example](https:) and one file containing gene-level genomic features for all genes within the 2Mb window centering around each GWAS each locus. The output of iRIGS are for all variants and genes with expression models. 
+### Running iRIGS:
 
+1. Download and untar/unzip this file [source code of iRIGS](https://www.dropbox.com/s/i9jw5zimjd0wgqn/iRIGS_code.tar.gz?dl=0).
+2. Enter folder "iRIGS_code" and type the following on linux platform for	help information.
 ```
-Rscript iRiGs.R --SNP_file input.loci --flank 1000000 --res_path iRIGS_result --res_pref T2D --max_gene 20 --weightFile input_features
+Rscript	Gibbs.R	-h 
 ```
 
-We have included a [tutorial](https://) of how to use the iRIGS method along with [example input files](https://) and [example output file](https://). 
+3. Usage:
+```
+Rscript Gibbs.R --SNP_file input.loci \
+--weightFile input_features \
+--res_path iRIGS_output \
+--res_pref T2D \
+--flank 1000000 \
+--max_gene 20 
+```
+
+4.Explanation of arguments:
+
+--SNP_file 
+
+The file name of input GWAS loci. This file must include three columns: SNP, Chr, and Position.
+
+--weightFile
+
+The file name for input genomic features at gene-level. 
+
+--flank 
+
+An	integer	indicating	the	flanking region	(bp) for covering	candidate genes. 1000000 (i.e. 1Mb)	is recommended - this is equivalent to a 2Mb window centering around the lead SNP of each GWAS locus.
+
+--res_path				
+
+Directory for the ouput files. Optional; if not specified, "iRIGS_result"	will be used as	default.
+
+--res_pref				
+
+Prefix name for the output folder. Optional; if not specified, 	SNP_file name will be used as default.
+
+
+We provide example [input loci](/example/input.loci) and [input features](/example/feature_file) to illustrate the format of the input files and to facilitate the runnning of iRIGS for T2D. 
+
+The output folder include two intermediate files containing the genes extracted from the GWAS loci, the genomic features of these genes along with a composite weight (score) calculated from all features, and a final output file containing GWAS loci and the posterior probabilities of the genes being sampled/selected as the risk gene within each locus (see [example output of iRIGS](/example/iRIGS_output/)). 
+
 
 ## 2. Build genetics-informed disease signature
 
@@ -30,10 +68,14 @@ We construct a genetics-informed T2D signature equipped with genetic importance 
 
 Beyond the HRGs, their interacting partners in the same pathways also have potential to serve as drug targets. In addition, there are loci that remain uncovered as the current T2D GWAS loci explain only a small portion of the T2D heritability. Therefore,  GIN-DRIP quantifies GIS for all genes based on the identified HRGs and Gene Ontology (GO)-derived network to prioritize genes at a genome-wide scale for T2D to facilitate drug repurposing,
 
-Conceptually, genes that share more GO terms with HRGs are expected to receive higher genetic importance scores (GIS). The [code](https://) to calculate the GIS and an example [input file](https://) and [output file](https://) are included. The input file is a list of HRGs. The output file is a ranked gene list with GIS. 
+Conceptually, genes that share more GO terms with HRGs are expected to receive higher genetic importance scores (GIS). We have included [code](/GIS/GIS.sh) for calculation GIS. 
+
+The input file is a list of the first-rank gene (ranked by the posterior probability) representing each GWAS locus. The output file is a list of genes with GIS. 
+
+The example [input](/GIS/example/input_hrg.txt) and [output files](/GIS/example/output_gis.txt) for GIS of T2D can be downloaded. 
 
 ```
-
+bash GIS.sh ../example/iRIGS/output/T2D 
 ```
 
 ### 2b. Defining the sign (up/down) effects of risk genes
@@ -58,22 +100,4 @@ We then extract the scores for FDA-approved drugs.
 
 Additional filtering can be applied to further narrow down the candidate list for prioritization. Here, we consider a drug to to be more worth pursing if it further demonstrates robustness of reversal effects across experimental conditions, its best reversal score across experimental conditions ranks top compared to other drugs, and its structure is similar to existing T2D medicines. The [drug similarity metric](https://) is based on DrugSimDB. 
 
-Telmisartan emerges as a top candidate after the comprehensive ranking method.    
-
-
-## Useful resources
-
-T2D GWAS summary statistics can be downloaded [here](http://diagram-consortium.org/) 
-
-GIN-DRIP requires the expression prediction models, or weights, of genes. The pre-computed weights of GTEx expression and splicing traits can be downloaded from [PredictDB](https://).
-
-
-
-## Blocks of code
-
-```
-```
-
-
-
-
+Telmisartan emerges as a top candidate after the comprehensive ranking method.
