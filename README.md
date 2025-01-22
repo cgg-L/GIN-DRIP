@@ -75,7 +75,7 @@ The input file is a list of the first-rank gene (ranked by the posterior probabi
 The example [input](/GIS/example/input_hrg.txt) and [output files](/GIS/example/output_gis.txt) for GIS of T2D can be downloaded. 
 
 ```
-bash GIS.sh ../example/iRIGS/output/T2D 
+bash GIS.sh iRIGS_output_T2D 
 ```
 
 ### 2b. Defining the sign (up/down) effects of risk genes
