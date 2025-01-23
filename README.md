@@ -72,7 +72,7 @@ Conceptually, genes that share more GO terms with HRGs are expected to receive h
 
 The input file is a list of the first-rank gene (ranked by the posterior probability) representing each GWAS locus. The output file is a list of genes with GIS. 
 
-The example [input](/GIS/example/input_hrg.txt) and [output files](/GIS/example/output_gis.txt) for GIS of T2D can be downloaded. 
+The example [input](/GIS/example/iRIGS_output_T2D) and [output files](/GIS/example/output_gis) for GIS of T2D can be downloaded. 
 
 ```
 bash GIS.sh iRIGS_output_T2D 
@@ -80,24 +80,24 @@ bash GIS.sh iRIGS_output_T2D
 
 ### 2b. Defining the sign (up/down) effects of risk genes
 
-To infer the direction of regulatory effects (up/down) of T2D risk alleles on risk genes, we use the TWAS approach that combines T2D GWAS summary statistics and transcriptomic data of tissues relevant to T2D (pancreas, adipose, skeletal muscle, liver) from the GTEx project. The software to calcuate. 
+To infer the direction of regulatory effects (up/down) of T2D risk alleles on genes, we use the TWAS/PrediXcan approach to estimate the genetically-predicted gene expression and its association with T2D risk. Here, we leveraged the results from the study (PMID:32541925), which used S-PrediXcan along with European T2D GWAS summary statistics from more than 1 million individuals and reference eQTL summary statistics of all tissues from GTEx. We focus on the tissues known to be relevanat to T2D (pancreas, adipose, skeletal muscle, liver) and extracted the gene-tissue pairs considered significant (if they passed the P-value threshold of 1.93E-06) by the original paper for coding genes (see [here](/example/twas_t2d_5_tissues_coding genes)).
 
-TWAS of the five T2D relevant tissues for all available genes can be obtained from [here](https://). 
+Of the signifcant genes, we observed that direction of association per gene with respect to T2D are consistent across the tissues for 99% of the significant genes, therefore, we summarize the tissue-level effects into an overall direction of effect by taking the sign of the average of the (PrediXcan) Z-scores.  
 
-To summarize the tissue-level effects into an overall effect (direction) per gene, we use the following calculations: of the five T2D relevant tissues, if one or more tissues have P-value below 0.05, we averaged the TWAS Z-scores of the tissues with P-value  below 0.05; if none of the tissues’ P-value below 0.05, we averaged the TWAS Z-scores of all five tissues. If the summed TWAS Z-score is negative, the gene is considered being down-regulated in T2D, and conversely, being up-regulated in T2D.
-
-The result of the above steps is a signed genetics-informed T2D-specific network, from which we can construct a T2D signature by selecting top important genes (defined as GIS>5) along with their signs. 
+Finally, we construct a T2D signature based on the genetics-informed genes equipped with direction and importance scores. The T2D signautre is provided [here](/example/signature). 
 
 ## 3. Prioritize drugs by aligning the disease signature to drug perturbation signatures
 
-In this step, we score drugs for their potential of “reversing” the T2D signature by signature matching of the T2D signature to the transcriptional perturbation profiles of drugs from the L1000 database. Specificaly, a weighted Kolmogorov-Smirnov enrichment score (ES) is calculated for each assayed compound. A negative value of ES indicates therapeutic potential while a positive ES indicates exacerbation potential. A compound can have multiple ES values given multiple perturbation experiments varying by duration, doses and cell lines.  
+In this step, we score drugs for their potential of “reversing” the T2D by signature matching of the T2D signature to the drug-perturbed gene expression profiles from the L1000 database. Specificaly, a weighted Kolmogorov-Smirnov enrichment score (ES) is calculated for each disease-drug pair. A negative value of ES indicates therapeutic potential while a positive ES indicates exacerbation potential. A compound can have multiple ES values given multiple perturbation experiments varying by duration, doses and cell types.  
 
-The calculation task can be readily performed at the L1000 website with input of the up- and down-regulated gene lists derived from the signed disease signature. 
+The calculation can be carried out at the L1000 website with an input of the [up-](example/query_up) and [down-regulated gene sets](example/query_down) as derived from the signed T2D signature. 
 
-After you log into the [L1000 website](https://clue.io/) (you need to register an account if you haven't logged in before), click the "Tool" on the top task bar; on the drop-down menu, click Query". On the Query page, you can upload your list of up- and down-regulated genes (Entrez Gene IDs) in the box of Up-regulated genes and Down-regulated genes, respectively. Make sure to name your project and specify the Query parameters (first choose "Gene expression L1000", and then specify "Touchstone", "Individual Query", and "late"). After that, click "Submit" and wait for the job to be done. One will be notified via email once the job is completed and the output is available to download. 
+After log into the [L1000 website](https://clue.io/) (suppose you have registered for an account), click the "Tool" on the top task bar; on the drop-down menu, click "Query". That will lead you to the Query page, where you can upload your list of up- and down-regulated genes (in Entrez Gene IDs) in the box of Up-regulated genes and Down-regulated genes, respectively. Make sure to name your project and specify the Query parameters (first choose "Gene expression L1000", and then specify "Touchstone", "Individual Query", and "late"). After that, click "Submit" and wait for the job to be done. One will be notified via email once the job is completed and the output (which is a folder) is available for download. 
 
-We then extract the scores for FDA-approved drugs.
+We then extract from the output the repurposing scores for FDA-approved drugs and rank the drugs by the scores.
 
-Additional filtering can be applied to further narrow down the candidate list for prioritization. Here, we consider a drug to to be more worth pursing if it further demonstrates robustness of reversal effects across experimental conditions, its best reversal score across experimental conditions ranks top compared to other drugs, and its structure is similar to existing T2D medicines. The [drug similarity metric](https://) is based on DrugSimDB. 
+Additional filtering can be applied to further narrow down the candidate list for prioritization. Here, we consider a drug to to be more worth pursing if it further demonstrates robustness of reversal effects across experimental conditions, its best reversal score across experimental conditions ranks top compared to other drugs, and its structure is similar to existing T2D medicines. The [drug similarity metric](/database/DrugSimDB_v1_0_0.tab) is based on [DrugSimDB](https://academic.oup.com/bib/article/22/3/bbaa126/5864589). The ID's in the column 1 and column 2 refer to drug IDs as annotated in [drugBank](https://go.drugbank.com/). One can search for drug information in drugBank with an input of a drug ID (e.g., DB00966) or a drug name (e.g., Telmisartan).  
 
-Telmisartan emerges as a top candidate after the comprehensive ranking method.
+
+## Useful resources
+The pre-computed weights of GTEx expression models can be downloaded from [PredictDB](https://predictdb.org/).
